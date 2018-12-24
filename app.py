@@ -1,5 +1,5 @@
-import os
 import json
+import os
 import shutil
 from urllib import request
 
@@ -18,7 +18,7 @@ def _posts_from(url, token):
     return json.loads(_response_from(url, token)).get('posts')
 
 
-def _title_date_tags_content_from(post):
+def _title_date_tags_categories_content_from(post):
     title = post['title']
     date = post['created_at']
     tags = [tag['name'] for tag in post['tags']]
@@ -27,13 +27,13 @@ def _title_date_tags_content_from(post):
     return title, date, tags, categories, content
 
 
+def _hexo_content_header(title, date, tags, categories):
+    return f'''---\ntitle: {title}\ndate: {date}\ntags: {tags}\ncategories: {categories}\n---\n'''
+
+
 def _write_to_file(content, path):
     with open(path, 'wt+') as f:
         f.write(content)
-
-
-def _hexo_header(title, date, tags, categories):
-    return f'''---\ntitle: {title}\ndate: {date}\ntags: {tags}\ncategories: {categories}\n---\n'''
 
 
 def _copy_downloads_files_to(hexo_post_dir):  # todo
@@ -44,12 +44,12 @@ def _copy_downloads_files_to(hexo_post_dir):  # todo
         shutil.copy2(file, f'{hexo_post_dir}/{file[12:]}')
 
 
-def run(ghost_api, token):
+def run(ghost_api, token, save_dir=_SAVE_DIR):
     posts = _posts_from(ghost_api, token)
-    os.makedirs(_SAVE_DIR, exist_ok=True)
+    os.makedirs(save_dir, exist_ok=True)
     for post in posts:
-        title, date, tags, categories, content = _title_date_tags_content_from(post)
-        _write_to_file(_hexo_header(title, date, tags, categories) + content,
+        title, date, tags, categories, content = _title_date_tags_categories_content_from(post)
+        _write_to_file(_hexo_content_header(title, date, tags, categories) + content,
                        f'{_SAVE_DIR}/{str(title).replace("/", "／")}.md')
     # _copy_downloads_files_to('./a')
 
