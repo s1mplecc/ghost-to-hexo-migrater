@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import shutil
 from urllib import request
 
@@ -36,7 +37,31 @@ def _write_to_file(content, path):
         f.write(content)
 
 
+def _download_images_and_replace_content_links(content, title, save_dir=_SAVE_DIR):
+    """Download images in each post to _SAVE_DIR/title directories, replace image links in content.
+     Return content after replace.
+    """
+    p = re.compile(r'!\[.+?\]\(.+?\)')
+    image_links = p.findall(content)
+    if image_links:
+        # print(len(image_links), title, image_links)
+        save_images_dir = f'{save_dir}/{str(title).replace("/", "／")}'
+        os.makedirs(save_images_dir, exist_ok=True)
+        for index, image_link in enumerate(image_links):
+            p2 = re.compile(r'(\(.+)\.(.+\))')
+            search = p2.search(image_link)
+            if search:
+                uri, ext = search.group(0)[2:-1], search.group(2)[0:-1]
+                request.urlretrieve(f'https://s1mple.xyz/{uri}', filename=f'{save_images_dir}/{index}.{ext}')
+                content = content.replace(uri, f'{index}.{ext}')
+            else:
+                print(image_link)  # todo logger
+
+    return content
+
+
 def _copy_downloads_files_to(hexo_post_dir):  # todo
+    """cp -r ./downloads/* hexo/source/_post/path"""
     files = [os.path.join(top, f) for top, dirs, fs in os.walk(_SAVE_DIR) for f in fs]
     print(files)
     print(len(files))
@@ -49,12 +74,13 @@ def run(ghost_api, token, save_dir=_SAVE_DIR):
     os.makedirs(save_dir, exist_ok=True)
     for post in posts:
         title, date, tags, categories, content = _title_date_tags_categories_content_from(post)
+        content = _download_images_and_replace_content_links(content, title)
         _write_to_file(_hexo_content_header(title, date, tags, categories) + content,
-                       f'{_SAVE_DIR}/{str(title).replace("/", "／")}.md')
+                       f'{save_dir}/{str(title).replace("/", "／")}.md')
     # _copy_downloads_files_to('./a')
 
 
 if __name__ == '__main__':
     _ghost_api = 'https://s1mple.xyz/ghost/api/v0.1/posts/?limit=9999&page=1&status=alll&formats=mobiledoc&include=tags'
-    _token = 'ZX6Lp0BC2lmlG1dhlRg8PoVBvAUolEEtcThCZLE8CmhTOtWxPji0hsRwn80BDcW0K7AaKiAEd7LEiVpaicvzOJXFFQwm9zBv3UdNW37uo9Tw4LeV97SnpXhuEIzgOq1hjxs1xE5X97dVXuhI3GOAGheN2QELvRPhbut5UFwDL17akupgRKbUxYHitWtyJYm'
+    _token = 'nRgAovALPGOVCiY5UlgOiqQYs6E2vT4UXNjesgweM5mlVaok24ENrzzg2R3rdfRufXYthR0Qdnp7MvjGWJlsj8XbiStHUqpJxYv5LwiNJuLaeqmgMQK6KfRaN5JtbfImkWZBnzOp8bA9rfYX2vEL6lHWvHzB2NNfo8su1HLuY8VoLzTfySLU9pnQm4h2NUu'
     run(_ghost_api, _token)
