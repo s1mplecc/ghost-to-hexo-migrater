@@ -1,9 +1,11 @@
 import json
 import os
 import re
+from concurrent.futures import ProcessPoolExecutor
 from urllib import request
 
 _SAVE_DIR = './downloads'
+_executor = ProcessPoolExecutor(16)
 
 
 def _response_from(url, token):
@@ -41,8 +43,8 @@ def _download_images_and_replace_links_in_content(content, title, site_uri, save
         for index, image_link in enumerate(image_markdown_links):
             search = re.search(r'(\(.+)\.(.+\))', image_link)
             image_uri, image_ext = search.group(0)[2:-1], search.group(2)[0:-1]
-            # todo multiprocess
-            request.urlretrieve(f'{site_uri}/{image_uri}', filename=f'{images_save_dir}/{index}.{image_ext}')
+            _executor.submit(request.urlretrieve, f'{site_uri}/{image_uri}',
+                             filename=f'{images_save_dir}/{index}.{image_ext}')
             content = content.replace(image_uri, f'{index}.{image_ext}')
     return content
 
@@ -63,6 +65,6 @@ def download(_site_uri, ghost_api, token, save_dir=_SAVE_DIR):
 
 if __name__ == '__main__':
     _site_uri = 'https://s1mple.xyz'
-    _ghost_api = '/ghost/api/v0.1/posts/?limit=9999&page=1&status=alll&formats=mobiledoc&include=tags'
+    _ghost_api = '/ghost/api/v0.1/posts/?limit=9999&page=1&status=all&formats=mobiledoc&include=tags'
     _token = 'jXwRER4QirDVKSkzE7VGeyuqG40sur8obwCFpGXjZYDjItTP157wZ96b7MbACN8uexbkw9f7VZ9EemX6H1YhbmSnfxYW0R3Acr0gPPnOWzoVKr8pXbp1EAX39BsJOZxCugFdlW2yxeGSJEa6EDW2SSeZ7IShVD7QE5iGH9cI6cV0jABwG6YfgXNHdDXpp4E'
     download(_site_uri, _ghost_api, _token)
