@@ -1,7 +1,6 @@
 import json
 import os
 import re
-import shutil
 from urllib import request
 
 _SAVE_DIR = './downloads'
@@ -32,55 +31,38 @@ def _hexo_content_header(title, date, tags, categories):
     return f'''---\ntitle: {title}\ndate: {date}\ntags: {tags}\ncategories: {categories}\n---\n'''
 
 
-def _write_to_file(content, path):
-    with open(path, 'wt+') as f:
-        f.write(content)
-
-
-def _download_images_and_replace_content_links(content, title, save_dir=_SAVE_DIR):
-    """Download images in each post to _SAVE_DIR/title directories, replace image links in content.
-     Return content after replace.
-    """
-    p = re.compile(r'!\[.+?\]\(.+?\)')
-    image_links = p.findall(content)
-    if image_links:
-        # print(len(image_links), title, image_links)
-        save_images_dir = f'{save_dir}/{str(title).replace("/", "／")}'
-        os.makedirs(save_images_dir, exist_ok=True)
-        for index, image_link in enumerate(image_links):
-            p2 = re.compile(r'(\(.+)\.(.+\))')
-            search = p2.search(image_link)
-            if search:
-                uri, ext = search.group(0)[2:-1], search.group(2)[0:-1]
-                request.urlretrieve(f'https://s1mple.xyz/{uri}', filename=f'{save_images_dir}/{index}.{ext}')
-                content = content.replace(uri, f'{index}.{ext}')
-            else:
-                print(image_link)  # todo logger
-
+def _download_images_and_replace_links_in_content(content, title, site_uri, save_dir=_SAVE_DIR):
+    """Download images in each post to ./save_dir/title/ directory, replace image markdown links "![]()" in content.
+     Return content after replace."""
+    image_markdown_links = re.findall(r'!\[.+?\]\(.+?\)', content)
+    if image_markdown_links:
+        images_save_dir = f'{save_dir}/{str(title).replace("/", "／")}'
+        os.makedirs(images_save_dir, exist_ok=True)
+        for index, image_link in enumerate(image_markdown_links):
+            search = re.search(r'(\(.+)\.(.+\))', image_link)
+            image_uri, image_ext = search.group(0)[2:-1], search.group(2)[0:-1]
+            # todo multiprocess
+            request.urlretrieve(f'{site_uri}/{image_uri}', filename=f'{images_save_dir}/{index}.{image_ext}')
+            content = content.replace(image_uri, f'{index}.{image_ext}')
     return content
 
 
-def _copy_downloads_files_to(hexo_post_dir):  # todo
-    """cp -r ./downloads/* hexo/source/_post/path"""
-    files = [os.path.join(top, f) for top, dirs, fs in os.walk(_SAVE_DIR) for f in fs]
-    print(files)
-    print(len(files))
-    for file in files:
-        shutil.copy2(file, f'{hexo_post_dir}/{file[12:]}')
-
-
-def run(ghost_api, token, save_dir=_SAVE_DIR):
-    posts = _posts_from(ghost_api, token)
+def download(_site_uri, ghost_api, token, save_dir=_SAVE_DIR):
+    """Download your Ghost blog's all post articles and images belonging to each article to ./save_dir directory.
+    Accessing ghost_api url with token.
+    Then you can execute linux command "cp -r ./save_dir/* hexo/source/_post/path; hexo generate -d"
+    to migrate download files"""
+    posts = _posts_from(_site_uri + ghost_api, token)
     os.makedirs(save_dir, exist_ok=True)
     for post in posts:
         title, date, tags, categories, content = _title_date_tags_categories_content_from(post)
-        content = _download_images_and_replace_content_links(content, title)
-        _write_to_file(_hexo_content_header(title, date, tags, categories) + content,
-                       f'{save_dir}/{str(title).replace("/", "／")}.md')
-    # _copy_downloads_files_to('./a')
+        content = _download_images_and_replace_links_in_content(content, title, _site_uri, save_dir)
+        with open(f'{save_dir}/{str(title).replace("/", "／")}.md', 'wt+') as f:
+            f.write(_hexo_content_header(title, date, tags, categories) + content)
 
 
 if __name__ == '__main__':
-    _ghost_api = 'https://s1mple.xyz/ghost/api/v0.1/posts/?limit=9999&page=1&status=alll&formats=mobiledoc&include=tags'
-    _token = 'nRgAovALPGOVCiY5UlgOiqQYs6E2vT4UXNjesgweM5mlVaok24ENrzzg2R3rdfRufXYthR0Qdnp7MvjGWJlsj8XbiStHUqpJxYv5LwiNJuLaeqmgMQK6KfRaN5JtbfImkWZBnzOp8bA9rfYX2vEL6lHWvHzB2NNfo8su1HLuY8VoLzTfySLU9pnQm4h2NUu'
-    run(_ghost_api, _token)
+    _site_uri = 'https://s1mple.xyz'
+    _ghost_api = '/ghost/api/v0.1/posts/?limit=9999&page=1&status=alll&formats=mobiledoc&include=tags'
+    _token = 'jXwRER4QirDVKSkzE7VGeyuqG40sur8obwCFpGXjZYDjItTP157wZ96b7MbACN8uexbkw9f7VZ9EemX6H1YhbmSnfxYW0R3Acr0gPPnOWzoVKr8pXbp1EAX39BsJOZxCugFdlW2yxeGSJEa6EDW2SSeZ7IShVD7QE5iGH9cI6cV0jABwG6YfgXNHdDXpp4E'
+    download(_site_uri, _ghost_api, _token)
