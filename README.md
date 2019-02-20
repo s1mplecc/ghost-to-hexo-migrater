@@ -13,8 +13,8 @@
 3. 不支持离线编辑文章。虽说这个可以本地写完了再一次性拷贝到服务器上，但这又回到了第 2 点。
 4. Themes 配置麻烦，不够统一。我记得 Kaldorei 主题还是我千辛万苦才搜罗到的，还得每次修改完源码后压缩上传（调样式的时候调的我头疼）。
 
-![dbdd8ad99f065192aa340cf474709b2d.png](evernotecid://158BCD08-F1F3-43B5-914B-4EB5ADC3ABA7/appyinxiangcom/18284037/ENResource/p265)
-![fa0a3c8ae59030f8e5ef80a9b04d8c7d.png](evernotecid://158BCD08-F1F3-43B5-914B-4EB5ADC3ABA7/appyinxiangcom/18284037/ENResource/p266)
+![](https://ws1.sinaimg.cn/large/dae6eda4gy1g0cueiokamj21hg1mcqqv.jpg)
+![](https://ws1.sinaimg.cn/large/dae6eda4gy1g0cuei34d7j22mo1nwtr7.jpg)
 
 ### Hexo
 
@@ -24,8 +24,8 @@
     3. 丰富的插件和主题，配置也统一化了。比如图中我使用的 Next 主题，主题的配置修改 `theme/next/_config.yml`；Hexo 的配置修改主目录的 `_config.yml` 即可。
     4. 图片上传还算方便。在与文章同名的文件夹下保存图片即可。这个下面会细说。
     
-![6bc65c0ff0fb6d62ea90ce4c35c04ac9.png](evernotecid://158BCD08-F1F3-43B5-914B-4EB5ADC3ABA7/appyinxiangcom/18284037/ENResource/p267)
-![8b1c5aa127adbfef220cfb30a6d55e1d.png](evernotecid://158BCD08-F1F3-43B5-914B-4EB5ADC3ABA7/appyinxiangcom/18284037/ENResource/p268)
+![](https://ws1.sinaimg.cn/large/dae6eda4gy1g0cuei3fl1j22mo1nw19u.jpg)
+![](https://ws1.sinaimg.cn/large/dae6eda4gy1g0cues10kgj22iy1pghdt.jpg)
 
 ## 安装部署
 
@@ -157,7 +157,7 @@ hexo g -d
 
 第三步，在 GitHub Pages 项目的配置中**绑定个人域名**，记得将 Enforce HTTPS 选项勾选上（GitHub 提供免费的 HTTPS 服务）。保存成功后如下图提示即可通过 `https://s1mple.xyz` 访问。
 
-![71904eae2cc3ae93cb0094a0b4f99cfa.png](evernotecid://158BCD08-F1F3-43B5-914B-4EB5ADC3ABA7/appyinxiangcom/18284037/ENResource/p270)
+![](https://ws1.sinaimg.cn/large/dae6eda4gy1g0cueo19f1j22lc1mc7wh.jpg)
 
 ## 图片引用
 
@@ -197,7 +197,7 @@ post_asset_folder: true
 
 这样可以将整个 `downloads` 文件夹拷贝到 Hexo 的 `source/_posts` 目录下发布即可！
 
-![7292889b7bb90233a1ac2dd1ac2cd97a.png](evernotecid://158BCD08-F1F3-43B5-914B-4EB5ADC3ABA7/appyinxiangcom/18284037/ENResource/p269)
+![](https://ws1.sinaimg.cn/large/dae6eda4gy1g0cueim0plj21is18i114.jpg)
 
 ## 参考
 
